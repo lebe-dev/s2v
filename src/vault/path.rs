@@ -58,8 +58,18 @@ mod tests {
     }
 
     #[test]
+    fn multiple_add_data_part() {
+        assert_eq!(add_data_part_to_vault_path("kv/data/demo/app"), "kv/data/demo/app")
+    }
+
+    #[test]
     fn remove_data_part_test() {
         assert_eq!(remove_data_part_from_vault_path("kv/data/demo/app"), "kv/demo/app")
+    }
+
+    #[test]
+    fn missing_data_block_removal() {
+        assert_eq!(remove_data_part_from_vault_path("kv/demo/app"), "kv/demo/app")
     }
 
     #[test]
