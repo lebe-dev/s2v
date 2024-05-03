@@ -33,5 +33,3 @@ pub fn execute_kubectl_command(args_row: &str) -> anyhow::Result<String> {
         Err(anyhow!("kubectl execution error"))
     }
 }
-
-}

@@ -25,9 +25,9 @@ pub const SECRET_MASK: &str = "secret-mask";
 
 pub const IGNORE_BASE64_ERRORS_FLAG: &str = "ignore-base64-errors";
 
-pub fn init_cli_app(app_version: &str) -> ArgMatches {
+pub fn init_cli_app() -> ArgMatches {
     Command::new("s2v")
-        .version(app_version)
+        .version("0.7.0")
         .author("Eugene Lebedev <eugene.0x90@gmail.com>")
         .about("Migration tool for K8s vanilla secrets to HashiCorp Vault")
         .subcommand_required(true)
