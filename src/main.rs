@@ -6,6 +6,7 @@ use crate::logging::get_logging_config;
 pub mod cli;
 pub mod logging;
 pub mod cmd;
+pub mod k8s;
 
 const APP_VERSION: &str = "0.7.0";
 const BUILD_NUMBER: &str = "UNKNOWN";
