@@ -31,10 +31,8 @@ export VAULT_TOKEN=some-token
 
 ## Добавление секретов из одного vault-пути к другому
 
-**СТАТУС ФИЧИ:** В РАЗРАБОТКЕ
-
 ```shell
-# ./s2v append --ignore-base64-errors=true <vault-src-path> <vault-dest-path>
+# ./s2v append <vault-src-path> <vault-dest-path>
 ./s2v append kv/data/demo/service1-redis kv/demo/service1
 ```
 

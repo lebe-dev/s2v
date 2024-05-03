@@ -9,6 +9,7 @@ use crate::exec::execute_shell_command;
 use crate::logging::LOG_LINE_SEPARATOR;
 
 pub mod path;
+pub mod read;
 
 const VAULT_BIN_PATH: &str = "/usr/bin/vault";
 

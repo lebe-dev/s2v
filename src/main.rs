@@ -3,7 +3,8 @@ use std::process::exit;
 
 use clap::ArgMatches;
 
-use crate::cli::{IGNORE_BASE64_ERRORS_FLAG, init_cli_app, init_working_dir, K8S_NAMESPACE_ARG, LOG_LEVEL_ARGUMENT, LOG_LEVEL_DEFAULT_VALUE, SECRET_MASK_ARG, VAULT_DEST_PATH_ARG};
+use crate::cli::{IGNORE_BASE64_ERRORS_FLAG, init_cli_app, init_working_dir, K8S_NAMESPACE_ARG, LOG_LEVEL_ARGUMENT, LOG_LEVEL_DEFAULT_VALUE, SECRET_MASK_ARG, VAULT_DEST_PATH_ARG, VAULT_SRC_PATH_ARG};
+use crate::cmd::append::append_secrets_to_vault_path;
 use crate::cmd::copy::copy_secrets_into_vault;
 use crate::logging::get_logging_config;
 
@@ -30,9 +31,22 @@ fn main() {
             println!("- filter secrets by mask: '{secret_mask}'");
             println!("- ignore base64 errors: {ignore_base64_errors}");
 
-            check_required_env_vars();
+            check_required_copy_env_vars();
 
             match copy_secrets_into_vault(&namespace, &vault_dest_path, &secret_mask, ignore_base64_errors) {
+                Ok(()) => println!("success"),
+                Err(e) => eprintln!("error: {}", e)
+            }
+        },
+        Some(("append", matches)) => {
+            let vault_src_path = matches.get_one::<&str>(VAULT_SRC_PATH_ARG).unwrap();
+            let vault_dest_path = matches.get_one::<&str>(VAULT_DEST_PATH_ARG).unwrap();
+
+            println!("append vault secrets from path '{vault_src_path}' to '{vault_dest_path}'..");
+
+            check_required_append_env_vars();
+
+            match append_secrets_to_vault_path(&vault_src_path, &vault_dest_path) {
                 Ok(()) => println!("success"),
                 Err(e) => eprintln!("error: {}", e)
             }
@@ -53,9 +67,15 @@ fn init_logging(matches: &ArgMatches) {
     log4rs::init_config(logging_config).unwrap();
 }
 
-fn check_required_env_vars() {
-    let required_vars = vec!["KUBECONFIG", "VAULT_TOKEN", "VAULT_ADDR"];
+fn check_required_copy_env_vars() {
+    check_required_env_vars(&vec!["KUBECONFIG", "VAULT_TOKEN", "VAULT_ADDR"])
+}
 
+fn check_required_append_env_vars() {
+    check_required_env_vars(&vec!["VAULT_TOKEN", "VAULT_ADDR"])
+}
+
+fn check_required_env_vars(required_vars: &Vec<&str>) {
     for var_name in required_vars {
         if env::var_os(var_name).is_none() {
             eprintln!("error: environment variable '{var_name}' is not defined. exit");

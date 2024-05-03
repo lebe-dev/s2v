@@ -13,8 +13,11 @@ pub const LOG_LEVEL_DEFAULT_VALUE: &str = "info";
 
 pub const COPY_COMMAND: &str = "copy";
 
+pub const APPEND_COMMAND: &str = "append";
+
 pub const K8S_NAMESPACE_ARG: &str = "k8s-namespace";
 
+pub const VAULT_SRC_PATH_ARG: &str = "vault-src-path";
 pub const VAULT_DEST_PATH_ARG: &str = "vault-dest-path";
 
 pub const SECRET_MASK_ARG: &str = "secret-mask";
@@ -50,12 +53,24 @@ pub fn init_cli_app() -> ArgMatches {
                 .arg(get_vault_dest_path_arg())
                 .arg(get_ignore_base64_errors_flag())
         )
+        .subcommand(
+            Command::new(APPEND_COMMAND)
+                .about("append secrets from vault source path to destination path")
+                .arg(get_vault_src_path_arg())
+                .arg(get_vault_dest_path_arg())
+        )
         .get_matches()
 }
 
 fn get_k8s_namespace_arg() -> Arg {
     Arg::new(K8S_NAMESPACE_ARG)
         .help("source kubernetes namespace. Example: demo")
+        .required(true)
+}
+
+fn get_vault_src_path_arg() -> Arg {
+    Arg::new(VAULT_SRC_PATH_ARG)
+        .help("vault src path. Example: kv/data/demo/some-service")
         .required(true)
 }
 

@@ -10,10 +10,10 @@
 ### Append secrets from source to destination vault path
 
 - Tool uses `vault` cli
-- Read all secrets from destination vault path
+- Read all secrets from destination vault path (ignores if path doesn't exist at the moment)
 - Read all secrets from source vault path
 - Merge secrets in one hashmap
-- Write all secrets to destination path
+- Write all secrets to the destination path
 
 ### Secrets decoding and creating in Vault
 
