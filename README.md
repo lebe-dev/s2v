@@ -11,9 +11,10 @@ Migrate vanilla k8s secrets to HashiCorp Vault.
 - Only opaque-type secrets are supported
 - Only kv secret storage is supported
 
-## Safety
+## Data safety
 
-Make sure you have fresh backup before you begin, but tool doesn't use any kind of delete operations in k8s and vault.
+The tool doesn't use direct remove command in kubernetes or vault, but `append` command 
+is able to overwrite secrets at destination vault path. Use it mindfully.
 
 ## Troubleshooting
 

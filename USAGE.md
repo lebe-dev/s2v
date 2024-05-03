@@ -31,7 +31,7 @@ Create secret manifests with vault paths as values. Output directory `manifests`
 
 ## Append Vault secrets from source path to destination path
 
-**FEATURE STATUS:** UNDER DEVELOPMENT
+**PRECAUTION:** This feature is able to overwrite your secrets at destination path.
 
 ```shell
 # ./s2v append --ignore-base64-errors=true <vault-src-path> <vault-dest-path>
