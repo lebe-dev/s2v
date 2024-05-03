@@ -1,61 +1,43 @@
-
 # Как использовать
 
-Подготовьте переменные:
+Подготовьте переменные окружения:
 
 ```shell
 export KUBECONFIG=~/.kube/some-cluster.kubeconfig
 export VAULT_ADDR=https://vault.company.com
 export VAULT_TOKEN=some-token
-export VAULT_SKIP_VERIFY=true
+# export VAULT_SKIP_VERIFY=true
 ```
 
-Затем используйте.
+Затем используйте команды
 
-## Копирование секретов K8s в хранилище Vault
+## Копирование секретов из K8s в HashiCorp Vault
 
 ```shell
-./s2v copy --k8s-namespace=demo --vault-base-path=kv/demo --ignore-base64-errors=true --secret-suffixes=secret
+# ./s2v copy --ignore-base64-errors=true <k8s-namespace> <secret-mask> <vault-dest-path>
+./s2v copy --ignore-base64-errors=true demo your-app kv/demo
 ```
 
-### Копирование и перезапись пути назначения в Vault
+## Генерация манифестов для секретов с путями в HashiCorp Vault
 
-Этот режим активируется, когда используются две опции: `--secret-mask` и `--vault-dest-path`. Опция `--vault-base-path` будет игнорироваться.
+**СТАТУС ФИЧИ:** В РАЗРАБОТКЕ
 
 ```shell
-./s2v copy --k8s-namespace=demo --vault-base-path=kv/demo            --ignore-base64-errors=true --secret-suffixes=secret            --secret-mask=manna --vault-dest-path=kv/demo/custom-dir
+# ./s2v gen-manifests --ignore-base64-errors=true <k8s-namespace> <secret-mask> <vault-dest-path>
+./s2v gen-manifests --ignore-base64-errors=true demo your-app kv/demo/your-app
 ```
 
-## Генерация манифестов секретов k8s с путями к Vault
+Манифесты будут сохранены в каталог `manifests`.
 
-Будьте осторожны со значением `vault-base-path`, оно должно содержать `../data/..` после движка секретов.
+## Добавление секретов из одного vault-пути к другому
+
+**СТАТУС ФИЧИ:** В РАЗРАБОТКЕ
 
 ```shell
-./s2v gen-manifests --k8s-namespace=demo --vault-base-path=kv/data/demo                     --secret-suffixes=secret                     --output-dir=manifests
+# ./s2v append --ignore-base64-errors=true <vault-src-path> <vault-dest-path>
+./s2v append kv/data/demo/service1-redis kv/demo/service1
 ```
 
-### Перезапись пути назначения в Vault
-
-Этот режим активируется, когда используются две опции: `--secret-mask` и `--vault-dest-path`. Опция `--vault-base-path` будет игнорироваться.
-
-```shell
-./s2v gen-manifests --k8s-namespace=demo --vault-base-path=kv/data/demo                     --secret-suffixes=secret --output-dir=manifests                     --secret-mask=manna -vault-dest-path=kv/demo/custom-dir
-```
-
-## Добавление секретов Vault из исходного пути в путь назначения
-
-```shell
-./s2v append --vault-src-path=kv/data/demo/service1-redis --vault-dest-path=kv/demo/service1
-```
-
-Примечания:
-- В значении аргумента `vault-src-path` должно содержаться `../data/..` в пути
-- В значении аргумента `vault-dest-path` НЕ должно содержаться `../data/..` в пути
-
-## Фильтрация по имени секрета
-
-Вы можете указать маску имени секрета с помощью опции `--secret-mask=[MASK]`.
-
-## Продолжение с указанного секрета
-
-Вы можете продолжить операцию 'copy' с указанного имени секрета, просто предоставьте опцию `--continue-from-secret=[SECRET-NAME]`.
+**Заметки:**
+- Аргумент `vault-src-path` должен содержание значение с `../data/..`. Например, `kv/data/demo/app`
+- Аргумент `vault-dest-path` НЕ должен содержание значение с `../data/..`. Например, `kv/demo/app`

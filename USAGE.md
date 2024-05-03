@@ -6,7 +6,7 @@ Prepare variables:
 export KUBECONFIG=~/.kube/some-cluster.kubeconfig
 export VAULT_ADDR=https://vault.company.com
 export VAULT_TOKEN=some-token
-export VAULT_SKIP_VERIFY=true
+# export VAULT_SKIP_VERIFY=true
 ```
 
 Then use.
@@ -14,53 +14,30 @@ Then use.
 ## Copy K8s secrets to the vault
 
 ```shell
-./s2v copy --k8s-namespace=demo --vault-base-path=kv/demo --ignore-base64-errors=true --secret-suffixes=secret
-```
-
-### Copy and override destination vault path
-
-This mode enabled when two options are used: `--secret-mask` and `--vault-dest-path`. Option `--vault-base-path` will be ignored.
-
-```shell
-./s2v copy --k8s-namespace=demo --vault-base-path=kv/demo \
-           --ignore-base64-errors=true --secret-suffixes=secret \
-           --secret-mask=manna --vault-dest-path=kv/demo/custom-dir
+# ./s2v copy --ignore-base64-errors=true <k8s-namespace> <secret-mask> <vault-dest-path>
+./s2v copy --ignore-base64-errors=true demo your-app kv/demo
 ```
 
 ## Generate k8s secret manifests with paths to vault
 
-Be careful with `vault-base-path` value it should contain `../data/..` after secret engine.
+**FEATURE STATUS:** UNDER DEVELOPMENT
+
+Create secret manifests with vault paths as values. Output directory `manifests`
 
 ```shell
-./s2v gen-manifests --k8s-namespace=demo --vault-base-path=kv/data/demo \
-                    --secret-suffixes=secret \
-                    --output-dir=manifests
-```
-
-### Override destination vault path
-
-This mode enabled when two options are used: `--secret-mask` and `--vault-dest-path`. Option `--vault-base-path` will be ignored.
-
-```shell
-./s2v gen-manifests --k8s-namespace=demo --vault-base-path=kv/data/demo \
-                    --secret-suffixes=secret --output-dir=manifests \
-                    --secret-mask=manna -vault-dest-path=kv/demo/custom-dir
+# ./s2v gen-manifests --ignore-base64-errors=true <k8s-namespace> <secret-mask> <vault-dest-path>
+./s2v gen-manifests --ignore-base64-errors=true demo your-app kv/demo/your-app
 ```
 
 ## Append Vault secrets from source path to destination path
 
+**FEATURE STATUS:** UNDER DEVELOPMENT
+
 ```shell
-./s2v append --vault-src-path=kv/data/demo/service1-redis --vault-dest-path=kv/demo/service1
+# ./s2v append --ignore-base64-errors=true <vault-src-path> <vault-dest-path>
+./s2v append kv/data/demo/service1-redis kv/demo/service1
 ```
 
 Notes:
 - Argument `vault-src-path` value it should contain `../data/..` in path
 - Argument `vault-dest-path` value it should NOT contain `../data/..` in path
-
-## Filter by secret name
-
-You can specify secret name mask with `--secret-mask=[MASK]` option.
-
-## Continue from secret
-
-You continue 'copy' operation from specified secret name, just provide `--continue-from-secret=[SECRET-NAME]` option.
