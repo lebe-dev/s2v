@@ -10,6 +10,8 @@ Migrate vanilla k8s secrets to HashiCorp Vault.
 
 - Only opaque-type secrets are supported
 - Only kv secret storage is supported
+- Generate manifest command:
+  - Secret name format `<SECRET-NAME>-secret`
 
 ## Data safety
 

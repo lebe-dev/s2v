@@ -15,7 +15,7 @@ Then use.
 
 ```shell
 # ./s2v copy --ignore-base64-errors=true <k8s-namespace> <secret-mask> <vault-dest-path>
-./s2v copy --ignore-base64-errors=true demo your-app kv/demo
+./s2v copy --ignore-base64-errors=true demo your-app kv/demo/your-app
 ```
 
 ## Generate k8s secret manifests with paths to vault

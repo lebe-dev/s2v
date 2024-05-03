@@ -15,7 +15,7 @@ export VAULT_TOKEN=some-token
 
 ```shell
 # ./s2v copy --ignore-base64-errors=true <k8s-namespace> <secret-mask> <vault-dest-path>
-./s2v copy --ignore-base64-errors=true demo your-app kv/demo
+./s2v copy --ignore-base64-errors=true demo your-app kv/demo/your-app
 ```
 
 ## Генерация манифестов для секретов с путями в HashiCorp Vault
