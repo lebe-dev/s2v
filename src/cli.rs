@@ -11,6 +11,20 @@ pub const WORK_DIR_SHORT_ARGUMENT: char = 'd';
 pub const LOG_LEVEL_ARGUMENT: &str = "log-level";
 pub const LOG_LEVEL_DEFAULT_VALUE: &str = "info";
 
+pub const COPY_COMMAND: &str = "copy";
+
+pub const K8S_NAMESPACE_ARG: &str = "k8s-namespace";
+
+pub const VAULT_BASE_PATH_ARG: &str = "vault-base-path";
+pub const VAULT_DEST_PATH_ARG: &str = "vault-dest_path";
+
+pub const SECRET_SUFFIXES_ARG: &str = "secret-suffixes";
+pub const SECRET_SUFFIXES_DEFAULT_VALUE: &str = "secret";
+
+pub const SECRET_MASK: &str = "secret-mask";
+
+pub const IGNORE_BASE64_ERRORS_FLAG: &str = "ignore-base64-errors";
+
 pub fn init_cli_app(app_version: &str) -> ArgMatches {
     Command::new("s2v")
         .version(app_version)
@@ -32,7 +46,55 @@ pub fn init_cli_app(app_version: &str) -> ArgMatches {
                 .default_value(LOG_LEVEL_DEFAULT_VALUE)
                 .required(false)
         )
+        .subcommand(
+            Command::new(COPY_COMMAND)
+                .about("copy opaque-secrets from kubernetes to hashicorp vault")
+                .arg(get_k8s_namespace_arg())
+                .arg(get_vault_base_path_arg())
+                .arg(get_vault_dest_path_arg())
+                .arg(get_secret_mask_arg())
+                .arg(get_secret_suffixes_arg())
+                .arg(get_ignore_base64_errors_flag())
+        )
         .get_matches()
+}
+
+fn get_k8s_namespace_arg() -> Arg {
+    Arg::new(K8S_NAMESPACE_ARG)
+        .help("source kubernetes namespace. Example: demo")
+        .required(true)
+}
+
+fn get_vault_base_path_arg() -> Arg {
+    Arg::new(VAULT_BASE_PATH_ARG)
+        .help("vault base path. Example: kv/demo")
+        .required(true)
+}
+
+fn get_vault_dest_path_arg() -> Arg {
+    Arg::new(VAULT_DEST_PATH_ARG)
+        .help("vault dest path. Example: kv/demo/some-service")
+        .required(true)
+}
+
+fn get_secret_mask_arg() -> Arg {
+    Arg::new(SECRET_MASK)
+        .help("filter secret names by mask. Example: some-service")
+        .required(true)
+}
+
+fn get_secret_suffixes_arg() -> Arg {
+    Arg::new(SECRET_SUFFIXES_ARG)
+        .help("get data from secrets which contains at least one suffix")
+        .default_value(SECRET_SUFFIXES_DEFAULT_VALUE)
+        .required(true)
+}
+
+fn get_ignore_base64_errors_flag() -> Arg {
+    Arg::new(IGNORE_BASE64_ERRORS_FLAG)
+        .help("ignore base64 decoding errors. If error occurs save secret value as is without decoding")
+        .default_value("false")
+        .required(true)
 }
 
 pub fn init_working_dir(matches: &ArgMatches) {
