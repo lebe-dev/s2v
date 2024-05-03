@@ -2,11 +2,10 @@
 
 ### Copy secrets
 
-- Tool uses `kubectl` to get secrets from namespace (`--k8s-namespace` option) with type `Opaque`
+- Tool uses `kubectl` to get secrets from namespace (`k8s-namespace` argument) with type `Opaque`
 - Read secret keys and values, decode them
 - Ignore secrets which contains `vault:` prefix in values
-- Remove from secret name suffixes (`--secret-suffixes` option) to get service name. I.e. `postgres-secret` -> `postgres`.
-- Create secrets in vault with `vault` cli tool. Vault secret path in format '[VAULT-BASE-PATH]/[SERVICE-NAME]' (depends on `--vault-base-path` option)
+- Create secrets in vault with `vault` tool
 
 ### Append secrets from source to destination vault path
 
