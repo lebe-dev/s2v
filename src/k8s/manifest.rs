@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use anyhow::{anyhow, Context};
 use log::{debug, error, info};
 
-use crate::k8s::kubectl::execute_kubectl_command;
-use crate::k8s::KubernetesSecret;
+use crate::exec::execute_shell_command;
+use crate::k8s::{KUBECTL_EXEC_PATH, KubernetesSecret};
 use crate::logging::LOG_LINE_SEPARATOR;
 
 pub fn get_secret_manifest(namespace: &str, secret_name: &str) -> anyhow::Result<String> {
@@ -12,7 +12,7 @@ pub fn get_secret_manifest(namespace: &str, secret_name: &str) -> anyhow::Result
 
     let args = format!("-n {namespace} get secret {secret_name} -o yaml");
 
-    let output = execute_kubectl_command(&args)?;
+    let output = execute_shell_command(KUBECTL_EXEC_PATH, &args)?;
 
     debug!("{LOG_LINE_SEPARATOR}");
     debug!("kubectl output:");

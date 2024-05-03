@@ -5,7 +5,6 @@ use std::path::Path;
 use anyhow::Context;
 use log::{debug, info, trace};
 
-use crate::cli::LOG_LEVEL_ARGUMENT;
 use crate::exec::execute_shell_command;
 use crate::logging::LOG_LINE_SEPARATOR;
 

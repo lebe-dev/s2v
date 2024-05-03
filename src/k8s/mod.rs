@@ -3,10 +3,11 @@ use std::collections::HashMap;
 use log::{debug, info, trace};
 use serde::Deserialize;
 
-use crate::k8s::kubectl::execute_kubectl_command;
+use crate::exec::execute_shell_command;
 
-pub mod kubectl;
 pub mod manifest;
+
+pub const KUBECTL_EXEC_PATH: &str = "/usr/bin/kubectl";
 
 #[derive(Deserialize)]
 pub struct KubernetesSecret {
@@ -18,7 +19,7 @@ pub fn get_secret_names_from_namespace(namespace: &str, mask: &str) -> anyhow::R
 
     let args = format!("-n {namespace} get secrets --field-selector type=Opaque");
 
-    let cmd_output = execute_kubectl_command(&args)?;
+    let cmd_output = execute_shell_command(KUBECTL_EXEC_PATH, &args)?;
 
     let rows = cmd_output.split("\n").collect::<Vec<&str>>();
 
