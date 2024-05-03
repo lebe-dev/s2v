@@ -448,7 +448,7 @@ checksum = "e86697c916019a8588c99b5fac3cead74ec0b4b819707a682fd4d23fa0ce1ba1"
 
 [[package]]
 name = "s2v"
-version = "0.7.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "base64",
