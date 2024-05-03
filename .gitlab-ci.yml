@@ -1,0 +1,16 @@
+stages:
+  - build
+
+build-app:
+  stage: build
+
+  artifacts:
+    paths:
+      - s2v
+      - '*.md'
+
+  script:
+    - 'build_number=`git rev-parse --short HEAD`'
+    - 'sed -i "s/UNKNOWN/"${build_number}"/g" src/main.rs'
+    - 'DOCKER_BUILDKIT=1 docker build --progress=plain -o out .'
+    - 'mv out/s2v .'
