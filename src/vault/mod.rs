@@ -8,6 +8,8 @@ use log::{debug, info, trace};
 use crate::exec::execute_shell_command;
 use crate::logging::LOG_LINE_SEPARATOR;
 
+pub mod path;
+
 const VAULT_BIN_PATH: &str = "/usr/bin/vault";
 
 const VAULT_SECRET_ENCODED_PREFIX: &str = "vault:";
