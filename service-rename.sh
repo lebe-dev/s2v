@@ -3,7 +3,7 @@
 #
 # Rename service name everywhere
 #
-# - Copy vault secrets from one path to another
+# - Append vault secrets from source path to the destination path
 # - Create vault policy
 
 if [ $# -ne 3 ]; then
@@ -15,8 +15,8 @@ namespace=$1
 src_service=$2
 dest_service=$3
 
-./s2v append --vault-src-path=kv/data/${namespace}/${src_service} --vault-dest-path=kv/${namespace}/${dest_service}
-./s2v append --vault-src-path=kv/data/${namespace}/${src_service}-redis --vault-dest-path=kv/${namespace}/${dest_service}
+./s2v append kv/data/${namespace}/${src_service} kv/${namespace}/${dest_service}
+./s2v append kv/data/${namespace}/${src_service}-redis kv/${namespace}/${dest_service}
 
 vault policy write ${dest_service} - <<EOF
 path "kv/data/${namespace}/${dest_service}" {
