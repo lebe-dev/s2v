@@ -19,6 +19,8 @@ pub fn get_secret_manifest(namespace: &str, secret_name: &str) -> anyhow::Result
     debug!("{output}");
     debug!("{LOG_LINE_SEPARATOR}");
 
+    info!("secret manifest '{secret_name}' (namespace '{namespace}') has been read");
+
     Ok(output)
 }
 
@@ -56,6 +58,8 @@ pub fn get_secrets_from_manifest(manifest: &str, ignore_base64_errors: bool) -> 
     debug!("secret values:");
     debug!("{:?}", secrets);
     debug!("{LOG_LINE_SEPARATOR}");
+
+    info!("secrets have been extracted from manifest");
 
     Ok(secrets)
 }

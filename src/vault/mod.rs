@@ -63,7 +63,7 @@ pub fn create_secrets_in_vault(vault_path: &str, secrets: &HashMap<String, Strin
         }
     }
 
-    info!("secrets have been saved into vault at path '{vault_path}'");
+    info!("all secrets have been saved into vault at path '{vault_path}'");
 
     Ok(())
 }
