@@ -3,6 +3,8 @@ use log4rs::config::{Appender, Config, Logger, Root};
 use log4rs::encode::pattern::PatternEncoder;
 use log::LevelFilter;
 
+pub const LOG_LINE_SEPARATOR: &str = "--------------------";
+
 const FILE_APPENDER_NAME: &str = "file";
 
 const LOG_FILE_PATH: &str = "s2v.log";
