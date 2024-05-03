@@ -7,6 +7,8 @@ pub mod cli;
 pub mod logging;
 pub mod cmd;
 pub mod k8s;
+pub mod vault;
+pub mod exec;
 
 fn main() {
     let matches = init_cli_app();
