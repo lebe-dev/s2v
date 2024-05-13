@@ -31,10 +31,15 @@ pub fn read_secrets_from_vault_path(vault_path: &str) -> anyhow::Result<HashMap<
 
 fn get_secrets_from_json_output(json: &str) -> anyhow::Result<HashMap<String,String>> {
     let vault_read_output = serde_json::from_str::<VaultReadOutput>(&json)?;
-    Ok(vault_read_output.data)
+    Ok(vault_read_output.data.data)
 }
 
 #[derive(Deserialize)]
 struct VaultReadOutput {
+    pub data: VaultReadOutputData
+}
+
+#[derive(Deserialize)]
+struct VaultReadOutputData {
     pub data: HashMap<String,String>
 }
