@@ -13,8 +13,8 @@ pub mod cli;
 pub mod logging;
 pub mod cmd;
 pub mod k8s;
-pub mod vault;
 pub mod exec;
+pub mod vault;
 
 fn main() {
     let matches = init_cli_app();
@@ -23,9 +23,9 @@ fn main() {
 
     match matches.subcommand() {
         Some(("copy", matches)) => {
-            let namespace = matches.get_one::<&str>(SRC_K8S_NAMESPACE_ARG).unwrap();
-            let vault_dest_path = matches.get_one::<&str>(VAULT_DEST_PATH_ARG).unwrap();
-            let secret_mask = matches.get_one::<&str>(SECRET_MASK_ARG).unwrap();
+            let namespace = matches.get_one::<String>(SRC_K8S_NAMESPACE_ARG).unwrap();
+            let vault_dest_path = matches.get_one::<String>(VAULT_DEST_PATH_ARG).unwrap();
+            let secret_mask = matches.get_one::<String>(SECRET_MASK_ARG).unwrap();
             let ignore_base64_errors = matches.get_flag(IGNORE_BASE64_ERRORS_FLAG);
             let ignore_utf8_errors = matches.get_flag(IGNORE_UTF8_ERRORS_FLAG);
 
