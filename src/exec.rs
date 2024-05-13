@@ -22,13 +22,13 @@ pub fn execute_shell_command(executable_path: &str, args_row: &str) -> anyhow::R
         Ok(stdout)
 
     } else {
-        error!("kubectl execution error:");
+        error!("shell command execution error:");
         let stderr = String::from_utf8_lossy(&output.stderr);
 
         error!("<stderr>");
         error!("{}", stderr);
         error!("</stderr>");
 
-        Err(anyhow!("kubectl execution error"))
+        Err(anyhow!("shell command execution error"))
     }
 }
