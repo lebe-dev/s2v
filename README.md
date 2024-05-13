@@ -6,12 +6,17 @@ Migrate vanilla k8s secrets to HashiCorp Vault.
 
 [USAGE](USAGE.md) | [HOW IT WORKS](HOW-IT-WORKS.md)
 
+## Features:
+
+- Copy secrets from Kubernetes to HashiCorp Vault
+- Generate secret manifest with vault paths as values
+- Append secrets from source vault path to another
+- Update vault paths for given secret manifest file, print results to stdout
+
 ## Limitations:
 
 - Only opaque-type secrets are supported
 - Only kv secret storage is supported
-- Generate manifest command:
-  - Secret name format `<SECRET-NAME>-secret`
 
 ## Data safety
 
