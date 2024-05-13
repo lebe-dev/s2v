@@ -36,6 +36,8 @@ pub fn generate_manifest_with_vault_paths(src_k8s_namespace: &str, secret_mask: 
         }
     }
 
+    all_secrets_names.sort();
+
     info!("all secret have been read, generating a manifest file at path manifests/{service_name}.yaml");
 
     let template_file = Path::new(TEMPLATE_FILENAME);
