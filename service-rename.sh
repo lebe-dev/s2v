@@ -15,8 +15,8 @@ namespace=$1
 src_service=$2
 dest_service=$3
 
-./s2v append kv/data/${namespace}/${src_service} kv/${namespace}/${dest_service}
-./s2v append kv/data/${namespace}/${src_service}-redis kv/${namespace}/${dest_service}
+./s2v --log-level=debug append kv/data/${namespace}/${src_service} kv/${namespace}/${dest_service}
+./s2v --log-level=debug append kv/data/${namespace}/${src_service}-redis kv/${namespace}/${dest_service}
 
 vault policy write ${dest_service} - <<EOF
 path "kv/data/${namespace}/${dest_service}" {
