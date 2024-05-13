@@ -9,8 +9,6 @@ export VAULT_TOKEN=some-token
 # export VAULT_SKIP_VERIFY=true
 ```
 
-Then use.
-
 ## Copy K8s secrets to the vault
 
 ```shell
@@ -45,3 +43,14 @@ Notes:
 Notes:
 - Argument `vault-src-path` value it should contain `../data/..` in path
 - Argument `vault-dest-path` value it should NOT contain `../data/..` in path
+
+## Replace base vault path for manifest
+
+You'd like to update vault base path for all values based on secret manifest file.
+
+```shell
+# ./s2v update-vault-path [--ignore-base64-errors] [--ignore-utf8-errors] <src-manifest-file> <new-vault-path>
+./s2v update-vault-path your-app.yaml kv/data/new/path/your-app
+```
+
+The app will print new secret keys and values.

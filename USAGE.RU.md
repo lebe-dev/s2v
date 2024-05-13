@@ -45,3 +45,12 @@ export VAULT_TOKEN=some-token
 **Заметки:**
 - Аргумент `vault-src-path` должен содержание значение с `../data/..`. Например, `kv/data/demo/app`
 - Аргумент `vault-dest-path` НЕ должен содержание значение с `../data/..`. Например, `kv/demo/app`
+
+## Замена базового vault-пути для секретов
+
+Команда читает секреты из указанного файла-манифеста и меняет vault-путь. Результат печатает на экран.
+
+```shell
+# ./s2v update-vault-path [--ignore-base64-errors] [--ignore-utf8-errors] <src-manifest-file> <new-vault-path>
+./s2v update-vault-path your-app.yaml kv/data/new/path/your-app
+```

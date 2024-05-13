@@ -17,6 +17,8 @@ pub const GEN_MANIFEST_COMMAND: &str = "gen-manifest";
 
 pub const APPEND_COMMAND: &str = "append";
 
+pub const UPDATE_VAULT_PATH_COMMAND: &str = "update-vault-path";
+
 pub const SRC_K8S_NAMESPACE_ARG: &str = "src-k8s-namespace";
 pub const DEST_K8S_NAMESPACE_ARG: &str = "dest-k8s-namespace";
 
@@ -27,6 +29,8 @@ pub const SECRET_MASK_ARG: &str = "secret-mask";
 
 pub const SERVICE_NAME_ARG: &str = "service-name";
 
+pub const FILENAME_ARG: &str = "filename";
+
 /// Use values AS IS if base64 related error occurs
 pub const IGNORE_BASE64_ERRORS_FLAG: &str = "ignore-base64-errors";
 
@@ -35,7 +39,7 @@ pub const IGNORE_UTF8_ERRORS_FLAG: &str = "ignore-utf8-errors";
 
 pub fn init_cli_app() -> ArgMatches {
     Command::new("s2v")
-        .version("1.0.0")
+        .version("1.1.0")
         .author("Eugene Lebedev <eugene.0x90@gmail.com>")
         .about("Migration tool for K8s vanilla secrets to HashiCorp Vault")
         .subcommand_required(true)
@@ -79,6 +83,14 @@ pub fn init_cli_app() -> ArgMatches {
                 .about("append secrets from vault source path to destination path")
                 .arg(get_vault_src_path_arg())
                 .arg(get_vault_dest_path_arg())
+        )
+        .subcommand(
+            Command::new(UPDATE_VAULT_PATH_COMMAND)
+                .about("update vault paths inside secret manifest file")
+                .arg(get_filename_arg())
+                .arg(get_vault_dest_path_arg())
+                .arg(get_ignore_base64_errors_flag())
+                .arg(get_ignore_utf8_errors_flag())
         )
         .get_matches()
 }
@@ -133,6 +145,12 @@ fn get_ignore_utf8_errors_flag() -> Arg {
         .help("ignore utf-8 related errors. Use secret value AS IS if utf-8 related error occurs")
         .action(ArgAction::SetTrue)
         .required(false)
+}
+
+fn get_filename_arg() -> Arg {
+    Arg::new(FILENAME_ARG)
+        .help("source file")
+        .required(true)
 }
 
 pub fn init_working_dir(matches: &ArgMatches) {

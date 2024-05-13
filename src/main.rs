@@ -3,11 +3,12 @@ use std::process::exit;
 
 use clap::ArgMatches;
 
-use crate::cli::{DEST_K8S_NAMESPACE_ARG, IGNORE_BASE64_ERRORS_FLAG, IGNORE_UTF8_ERRORS_FLAG, init_cli_app, init_working_dir, LOG_LEVEL_ARGUMENT, LOG_LEVEL_DEFAULT_VALUE, SECRET_MASK_ARG, SERVICE_NAME_ARG, SRC_K8S_NAMESPACE_ARG, VAULT_DEST_PATH_ARG, VAULT_SRC_PATH_ARG};
+use crate::cli::{DEST_K8S_NAMESPACE_ARG, FILENAME_ARG, IGNORE_BASE64_ERRORS_FLAG, IGNORE_UTF8_ERRORS_FLAG, init_cli_app, init_working_dir, LOG_LEVEL_ARGUMENT, LOG_LEVEL_DEFAULT_VALUE, SECRET_MASK_ARG, SERVICE_NAME_ARG, SRC_K8S_NAMESPACE_ARG, VAULT_DEST_PATH_ARG, VAULT_SRC_PATH_ARG};
 use crate::cmd::append::append_secrets_to_vault_path;
 use crate::cmd::copy::copy_secrets_into_vault;
 use crate::cmd::manifests::generate_manifest_with_vault_paths;
-use crate::logging::get_logging_config;
+use crate::cmd::update::update_vault_paths_based_on_manifest_file;
+use crate::logging::{get_logging_config, LOG_LINE_SEPARATOR};
 
 pub mod cli;
 pub mod logging;
@@ -57,6 +58,7 @@ fn main() {
             println!("- service name mask: '{service_name}'");
             println!("- vault destination path: '{vault_dest_path}'");
             println!("- ignore base64 errors: {ignore_base64_errors}");
+            println!("- ignore utf8 errors: {ignore_utf8_errors}");
 
             check_required_gen_manifests_env_vars();
 
@@ -78,8 +80,31 @@ fn main() {
                 Ok(()) => println!("success"),
                 Err(e) => eprintln!("error: {}, {}", e, e.root_cause())
             }
+        },
+        Some(("update-vault-path", matches)) => {
+            let manifest_src_file = matches.get_one::<String>(FILENAME_ARG).unwrap();
+            let vault_dest_path = matches.get_one::<String>(VAULT_DEST_PATH_ARG).unwrap();
+
+            let ignore_base64_errors = matches.get_flag(IGNORE_BASE64_ERRORS_FLAG);
+            let ignore_utf8_errors = matches.get_flag(IGNORE_UTF8_ERRORS_FLAG);
+
+            println!("update vault path inside manifest '{manifest_src_file}' to '{vault_dest_path}'..");
+            println!("- ignore base64 errors: {ignore_base64_errors}");
+            println!("- ignore utf8 errors: {ignore_utf8_errors}");
+
+            match update_vault_paths_based_on_manifest_file(&manifest_src_file, &vault_dest_path,
+                                                        ignore_base64_errors, ignore_utf8_errors) {
+                Ok(values) => {
+                    println!("updated values:");
+                    println!("{}", LOG_LINE_SEPARATOR);
+                    for (k, v) in values {
+                        println!("{k}: {v}")
+                    }
+                },
+                Err(e) => eprintln!("error: {}, {}", e, e.root_cause())
+            }
         }
-        _ => unreachable!()
+        _ => println!("use -h to get help")
     }
 }
 
