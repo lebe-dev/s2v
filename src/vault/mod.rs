@@ -73,7 +73,7 @@ pub fn create_secrets_in_vault(vault_path: &str, secrets: &HashMap<String, Strin
 
 fn is_complex_secret_value(input: &str) -> bool {
     input.contains("\n") || input.contains("\"") ||
-    input.contains(",") || input.contains(" ")
+        input.contains(",") || input.contains(" ")
 }
 
 fn write_complex_value_into_file(key: &str, value: &str) -> anyhow::Result<String> {
