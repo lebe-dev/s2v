@@ -1,5 +1,43 @@
+use std::collections::HashMap;
 
 const DATA_PATH_PART: &str = "data";
+
+pub fn get_secrets_with_vault_paths(secrets: &HashMap<String, String>, vault_base_path: &str) -> HashMap<String, String> {
+    for x in secrets {
+        
+    }
+    
+    unimplemented!()
+}
+
+#[cfg(test)]
+mod get_secret_with_vault_paths_tests {
+    use std::collections::HashMap;
+
+    use crate::vault::path::get_secrets_with_vault_paths;
+
+    #[test]
+    fn values_should_be_properly_encoded_with_base64() {
+        let input_secrets = HashMap::from([
+            ("DB_USER".to_string(), "demo".to_string()),
+            ("DB_PASS".to_string(), "g4958gj24g90j349fm".to_string()),
+        ]);
+
+        let expected_results = HashMap::from([
+            ("DB_USER".to_string(), "dmF1bHQ6a3YvZGF0YS9kZW1vL2FwcCNEQl9VU0VS".to_string()),
+            ("DB_PASS".to_string(), "dmF1bHQ6a3YvZGF0YS9kZW1vL2FwcCNEQl9QQVNT".to_string()),
+        ]);
+
+        let results = get_secrets_with_vault_paths(&input_secrets, "demo");
+
+        for (key, expected_value) in expected_results {
+            assert!(results.contains_key(&key));
+
+            let value = results.get(&key).unwrap();
+            assert_eq!(value, &expected_value);
+        }
+    }
+}
 
 /// Adds ../data/.. part to given vault path
 ///

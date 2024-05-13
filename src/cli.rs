@@ -1,7 +1,8 @@
 use std::env;
 use std::path::Path;
 
-use clap::{Arg, ArgMatches, Command};
+use clap::{Arg, ArgAction, ArgMatches, Command};
+use clap::ArgAction::SetFalse;
 use log::debug;
 
 pub const WORKDIR: &str = ".";
@@ -13,14 +14,19 @@ pub const LOG_LEVEL_DEFAULT_VALUE: &str = "info";
 
 pub const COPY_COMMAND: &str = "copy";
 
+pub const GEN_MANIFEST_COMMAND: &str = "gen-manifest";
+
 pub const APPEND_COMMAND: &str = "append";
 
-pub const K8S_NAMESPACE_ARG: &str = "k8s-namespace";
+pub const SRC_K8S_NAMESPACE_ARG: &str = "src-k8s-namespace";
+pub const DEST_K8S_NAMESPACE_ARG: &str = "dest-k8s-namespace";
 
 pub const VAULT_SRC_PATH_ARG: &str = "vault-src-path";
 pub const VAULT_DEST_PATH_ARG: &str = "vault-dest-path";
 
 pub const SECRET_MASK_ARG: &str = "secret-mask";
+
+pub const SERVICE_NAME_ARG: &str = "service-name";
 
 pub const IGNORE_BASE64_ERRORS_FLAG: &str = "ignore-base64-errors";
 
@@ -48,8 +54,18 @@ pub fn init_cli_app() -> ArgMatches {
         .subcommand(
             Command::new(COPY_COMMAND)
                 .about("copy secrets from kubernetes to hashicorp vault")
-                .arg(get_k8s_namespace_arg())
+                .arg(get_src_k8s_namespace_arg())
                 .arg(get_secret_mask_arg())
+                .arg(get_vault_dest_path_arg())
+                .arg(get_ignore_base64_errors_flag())
+        )
+        .subcommand(
+            Command::new(GEN_MANIFEST_COMMAND)
+                .about("generate secret manifest file with vault paths for a service. Merge secrets data if mask matches multiple secrets")
+                .arg(get_src_k8s_namespace_arg())
+                .arg(get_secret_mask_arg())
+                .arg(get_service_name_arg())
+                .arg(get_dest_k8s_namespace_arg())
                 .arg(get_vault_dest_path_arg())
                 .arg(get_ignore_base64_errors_flag())
         )
@@ -62,9 +78,15 @@ pub fn init_cli_app() -> ArgMatches {
         .get_matches()
 }
 
-fn get_k8s_namespace_arg() -> Arg {
-    Arg::new(K8S_NAMESPACE_ARG)
+fn get_src_k8s_namespace_arg() -> Arg {
+    Arg::new(SRC_K8S_NAMESPACE_ARG)
         .help("source kubernetes namespace. Example: demo")
+        .required(true)
+}
+
+fn get_dest_k8s_namespace_arg() -> Arg {
+    Arg::new(DEST_K8S_NAMESPACE_ARG)
+        .help("destination kubernetes namespace. Example: demo")
         .required(true)
 }
 
@@ -86,11 +108,17 @@ fn get_secret_mask_arg() -> Arg {
         .required(true)
 }
 
+fn get_service_name_arg() -> Arg {
+    Arg::new(SERVICE_NAME_ARG)
+        .help("set service name. Service name is will be used in secret manifests. Example: some-service")
+        .required(true)
+}
+
 fn get_ignore_base64_errors_flag() -> Arg {
     Arg::new(IGNORE_BASE64_ERRORS_FLAG)
         .long(IGNORE_BASE64_ERRORS_FLAG)
-        .help("ignore base64 decoding errors. If error occurs save secret value as is without decoding")
-        .default_value("false")
+        .help("ignore base64 decoding errors. If error occurs save secret value AS IS without decoding")
+        .action(ArgAction::SetTrue)
         .required(false)
 }
 

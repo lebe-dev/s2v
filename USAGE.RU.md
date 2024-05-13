@@ -20,16 +20,22 @@ export VAULT_TOKEN=some-token
 
 ## Генерация манифестов для секретов с путями в HashiCorp Vault
 
-**СТАТУС ФИЧИ:** В РАЗРАБОТКЕ
+Команда читает секреты из k8s-кластера (переменная `KUBECONFIG`), которые подходят по маске (аргумент `secret-mask`).
+Затем формирует yaml-манифеста на базе шаблона `template.yaml`. В качестве значений для секретов используется формат `vault:<vault-dest-path>#имя-секрета` (в кодировке base64).
 
 ```shell
-# ./s2v gen-manifests --ignore-base64-errors=true <k8s-namespace> <secret-mask> <vault-dest-path>
-./s2v gen-manifests --ignore-base64-errors=true demo your-app kv/demo/your-app
+# ./s2v gen-manifest --ignore-base64-errors=true <src-k8s-namespace> <secret-mask> <service-name> <dest-k8s-namespace> <vault-dest-path>
+./s2v gen-manifest --ignore-base64-errors=true old-ns your-app your-app new-ns kv/demo/your-app
 ```
 
-Манифесты будут сохранены в каталог `manifests`.
+Манифест будет сохранён в каталог `manifests` по имени сервиса (аргумент `service-name`).
+
+- Аргумент `service-name` представлен как переменная `serviceName` в шаблоне `template.yaml`
+- Аргумент `dest-k8s-namespace` представлен как переменная `namespace` в шаблоне `template.yaml`
 
 ## Добавление секретов из одного vault-пути к другому
+
+**ПРЕДУПРЕЖДЕНИЕ:** Эта команда может перезаписать ваши секреты по указанному пути если вы используете kv v1 engine.
 
 ```shell
 # ./s2v append <vault-src-path> <vault-dest-path>
