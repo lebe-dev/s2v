@@ -24,8 +24,9 @@ pub fn get_secret_manifest(namespace: &str, secret_name: &str) -> anyhow::Result
     Ok(output)
 }
 
-pub fn get_secrets_from_manifest(manifest: &str, ignore_base64_errors: bool) -> anyhow::Result<HashMap<String,String>> {
-    info!("getting secrets from manifest, ignore base64 errors: {ignore_base64_errors}..");
+pub fn get_secrets_from_manifest(manifest: &str, ignore_base64_errors: bool,
+                             ignore_utf8_errors: bool) -> anyhow::Result<HashMap<String,String>> {
+    info!("getting secrets from manifest, ignore base64 errors: {ignore_base64_errors}, ignore utf-8 related errors {ignore_utf8_errors}..");
 
     debug!("{LOG_LINE_SEPARATOR}");
     debug!("manifest:");
@@ -37,10 +38,22 @@ pub fn get_secrets_from_manifest(manifest: &str, ignore_base64_errors: bool) -> 
     let mut secrets: HashMap<String, String> = HashMap::new();
 
     for (key, encoded_value) in secret.data {
+        debug!("processing secret key '{key}'");
         match base64::decode(&encoded_value) {
             Ok(decoded) => {
-                let value = String::from_utf8(decoded).unwrap();
-                secrets.insert(key.to_string(), value);
+                match String::from_utf8(decoded) {
+                    Ok(value) => secrets.insert(key.to_string(), value),
+                    Err(e) => {
+                        error!("secret '{key}' contains non-utf8 secret value: {}", e);
+
+                        if ignore_utf8_errors {
+                            secrets.insert(key.to_string(), encoded_value.to_string())
+
+                        } else {
+                            return Err(anyhow!("secret value error"))
+                        }
+                    }
+                };
             }
             Err(e) => {
                 error!("secret value decoding error '{}'", e);
@@ -76,13 +89,15 @@ mod tests {
     fn return_secret_values() {
         let manifest_file = Path::new("test-data").join("secret.yaml");
         let manifest = fs::read_to_string(manifest_file).unwrap();
-        let secrets = get_secrets_from_manifest(&manifest, true).unwrap();
+        let secrets = get_secrets_from_manifest(
+            &manifest, true, true).unwrap();
 
         let expected_values = HashMap::from([
             ("DATABASE_URL", "app.db"),
             ("DATABASE_USER", "demo-app-user"),
             ("DATABASE_PASSWORD", "1029j09qelDAm"),
             ("TOKEN", "non-encoded-value"),
+            ("NON_UTF8_VALUE", "d6320dcf844b2b13561b47c647d6076c"),
         ]);
 
         assert_results(&secrets, &expected_values);
@@ -90,14 +105,21 @@ mod tests {
 
     #[test]
     fn return_error_for_invalid_yaml_syntax() {
-        assert!(get_secrets_from_manifest("invalid-syntax", true).is_err())
+        assert!(get_secrets_from_manifest("invalid-syntax", true, true).is_err())
     }
 
     #[test]
     fn return_error_for_invalid_base64_values() {
         let manifest_file = Path::new("test-data").join("secret.yaml");
         let manifest = fs::read_to_string(manifest_file).unwrap();
-        assert!(get_secrets_from_manifest(&manifest, false).is_err())
+        assert!(get_secrets_from_manifest(&manifest, false, false).is_err())
+    }
+
+    #[test]
+    fn return_error_for_invalid_utf8_values() {
+        let manifest_file = Path::new("test-data").join("invalid-utf8.yaml");
+        let manifest = fs::read_to_string(manifest_file).unwrap();
+        assert!(get_secrets_from_manifest(&manifest, false, false).is_err())
     }
 
     fn assert_results(results: &HashMap<String, String>, expected_results: &HashMap<&str, &str>) {

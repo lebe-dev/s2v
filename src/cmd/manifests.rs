@@ -1,8 +1,6 @@
-use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use anyhow::Context;
 use log::info;
 use tera::{Context as TeraContext, Tera};
 
@@ -14,7 +12,7 @@ pub const TEMPLATE_FILENAME: &str = "template.yaml";
 
 pub fn generate_manifest_with_vault_paths(src_k8s_namespace: &str, secret_mask: &str, service_name: &str,
                                           dest_k8s_namespace: &str, vault_dest_path: &str,
-                                          ignore_base64_errors: bool) -> anyhow::Result<()> {
+                      ignore_base64_errors: bool, ignore_utf8_errors: bool) -> anyhow::Result<()> {
     info!("generate manifests for secrets from namespace '{src_k8s_namespace}' with secret mask '{secret_mask}'");
     info!("- service name: '{service_name}'");
     info!("- vault destination path: '{vault_dest_path}'");
@@ -31,7 +29,7 @@ pub fn generate_manifest_with_vault_paths(src_k8s_namespace: &str, secret_mask: 
     for secret_name in secret_names {
         let manifest = get_secret_manifest(&src_k8s_namespace, &secret_name)?;
 
-        let secrets = get_secrets_from_manifest(&manifest, ignore_base64_errors)?;
+        let secrets = get_secrets_from_manifest(&manifest, ignore_base64_errors, ignore_utf8_errors)?;
 
         for (k, _) in secrets {
             all_secrets_names.push(k)

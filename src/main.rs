@@ -3,7 +3,7 @@ use std::process::exit;
 
 use clap::ArgMatches;
 
-use crate::cli::{DEST_K8S_NAMESPACE_ARG, IGNORE_BASE64_ERRORS_FLAG, init_cli_app, init_working_dir, LOG_LEVEL_ARGUMENT, LOG_LEVEL_DEFAULT_VALUE, SECRET_MASK_ARG, SERVICE_NAME_ARG, SRC_K8S_NAMESPACE_ARG, VAULT_DEST_PATH_ARG, VAULT_SRC_PATH_ARG};
+use crate::cli::{DEST_K8S_NAMESPACE_ARG, IGNORE_BASE64_ERRORS_FLAG, IGNORE_UTF8_ERRORS_FLAG, init_cli_app, init_working_dir, LOG_LEVEL_ARGUMENT, LOG_LEVEL_DEFAULT_VALUE, SECRET_MASK_ARG, SERVICE_NAME_ARG, SRC_K8S_NAMESPACE_ARG, VAULT_DEST_PATH_ARG, VAULT_SRC_PATH_ARG};
 use crate::cmd::append::append_secrets_to_vault_path;
 use crate::cmd::copy::copy_secrets_into_vault;
 use crate::cmd::manifests::generate_manifest_with_vault_paths;
@@ -27,14 +27,17 @@ fn main() {
             let vault_dest_path = matches.get_one::<&str>(VAULT_DEST_PATH_ARG).unwrap();
             let secret_mask = matches.get_one::<&str>(SECRET_MASK_ARG).unwrap();
             let ignore_base64_errors = matches.get_flag(IGNORE_BASE64_ERRORS_FLAG);
+            let ignore_utf8_errors = matches.get_flag(IGNORE_UTF8_ERRORS_FLAG);
 
             println!("copy secrets from namespace '{namespace}' to vault '{vault_dest_path}'..");
             println!("- filter secrets by mask: '{secret_mask}'");
             println!("- ignore base64 errors: {ignore_base64_errors}");
+            println!("- ignore utf8-related errors: {ignore_utf8_errors}");
 
             check_required_copy_env_vars();
 
-            match copy_secrets_into_vault(&namespace, &vault_dest_path, &secret_mask, ignore_base64_errors) {
+            match copy_secrets_into_vault(&namespace, &vault_dest_path, &secret_mask,
+                                          ignore_base64_errors, ignore_utf8_errors) {
                 Ok(()) => println!("success"),
                 Err(e) => eprintln!("error: {}", e)
             }
@@ -46,6 +49,7 @@ fn main() {
             let service_name = matches.get_one::<String>(SERVICE_NAME_ARG).unwrap();
             let vault_dest_path = matches.get_one::<String>(VAULT_DEST_PATH_ARG).unwrap();
             let ignore_base64_errors = matches.get_flag(IGNORE_BASE64_ERRORS_FLAG);
+            let ignore_utf8_errors = matches.get_flag(IGNORE_UTF8_ERRORS_FLAG);
 
             println!("generate manifests for secrets from namespace '{src_k8s_namespace}'");
             println!("- filter secrets by mask: '{secret_mask}'");
@@ -57,7 +61,7 @@ fn main() {
             check_required_gen_manifests_env_vars();
 
             match generate_manifest_with_vault_paths(&src_k8s_namespace, &secret_mask, &service_name,
-                                     &dest_k8s_namespace, &vault_dest_path, ignore_base64_errors) {
+                                     &dest_k8s_namespace, &vault_dest_path, ignore_base64_errors, ignore_utf8_errors) {
                 Ok(()) => println!("success"),
                 Err(e) => eprintln!("error: {}", e)
             }

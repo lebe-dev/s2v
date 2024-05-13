@@ -2,7 +2,6 @@ use std::env;
 use std::path::Path;
 
 use clap::{Arg, ArgAction, ArgMatches, Command};
-use clap::ArgAction::SetFalse;
 use log::debug;
 
 pub const WORKDIR: &str = ".";
@@ -28,7 +27,11 @@ pub const SECRET_MASK_ARG: &str = "secret-mask";
 
 pub const SERVICE_NAME_ARG: &str = "service-name";
 
+/// Use values AS IS if base64 related error occurs
 pub const IGNORE_BASE64_ERRORS_FLAG: &str = "ignore-base64-errors";
+
+/// Use values AS IS if utf-8 related error occurs
+pub const IGNORE_UTF8_ERRORS_FLAG: &str = "ignore-utf8-errors";
 
 pub fn init_cli_app() -> ArgMatches {
     Command::new("s2v")
@@ -58,6 +61,7 @@ pub fn init_cli_app() -> ArgMatches {
                 .arg(get_secret_mask_arg())
                 .arg(get_vault_dest_path_arg())
                 .arg(get_ignore_base64_errors_flag())
+                .arg(get_ignore_utf8_errors_flag())
         )
         .subcommand(
             Command::new(GEN_MANIFEST_COMMAND)
@@ -68,6 +72,7 @@ pub fn init_cli_app() -> ArgMatches {
                 .arg(get_dest_k8s_namespace_arg())
                 .arg(get_vault_dest_path_arg())
                 .arg(get_ignore_base64_errors_flag())
+                .arg(get_ignore_utf8_errors_flag())
         )
         .subcommand(
             Command::new(APPEND_COMMAND)
@@ -117,7 +122,15 @@ fn get_service_name_arg() -> Arg {
 fn get_ignore_base64_errors_flag() -> Arg {
     Arg::new(IGNORE_BASE64_ERRORS_FLAG)
         .long(IGNORE_BASE64_ERRORS_FLAG)
-        .help("ignore base64 decoding errors. If error occurs save secret value AS IS without decoding")
+        .help("ignore base64 decoding errors. Use secret value AS IS if base64 related error occurs")
+        .action(ArgAction::SetTrue)
+        .required(false)
+}
+
+fn get_ignore_utf8_errors_flag() -> Arg {
+    Arg::new(IGNORE_UTF8_ERRORS_FLAG)
+        .long(IGNORE_UTF8_ERRORS_FLAG)
+        .help("ignore utf-8 related errors. Use secret value AS IS if utf-8 related error occurs")
         .action(ArgAction::SetTrue)
         .required(false)
 }
