@@ -35,6 +35,9 @@ pub fn copy_secrets_into_vault(k8s_namespace: &str, vault_dest_path: &str, secre
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+    use std::path::Path;
+
     use crate::cmd::copy::copy_secrets_into_vault;
     use crate::k8s::mock::KubectlToolMockImpl;
     use crate::vault::mock::VaultToolMockImpl;
@@ -62,6 +65,27 @@ mod tests {
             false, "".to_string(), true);
 
         let vault_tool = VaultToolMockImpl::new(false);
+
+        assert!(
+            copy_secrets_into_vault(
+                "whatever", "whatever", "whatever",
+                true, true,
+                &kubectl_tool, &vault_tool
+            ).is_err()
+        )
+    }
+
+    #[test]
+    fn return_error_if_unable_to_create_secrets() {
+        let secret_path = Path::new("test-data").join("secret.yaml");
+
+        let manifest = fs::read_to_string(&secret_path).unwrap();
+
+        let kubectl_tool = KubectlToolMockImpl::new(
+            vec!["a".to_string()],
+            false, manifest, false);
+
+        let vault_tool = VaultToolMockImpl::new(true);
 
         assert!(
             copy_secrets_into_vault(
