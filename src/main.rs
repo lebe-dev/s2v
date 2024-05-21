@@ -10,6 +10,7 @@ use crate::cmd::manifests::generate_manifest_with_vault_paths;
 use crate::cmd::update::update_vault_paths_based_on_manifest_file;
 use crate::k8s::KubectlToolImpl;
 use crate::logging::{get_logging_config, LOG_LINE_SEPARATOR};
+use crate::vault::VaultToolImpl;
 
 pub mod cli;
 pub mod logging;
@@ -39,9 +40,11 @@ fn main() {
             check_required_copy_env_vars();
 
             let kubectl_tool = KubectlToolImpl::new();
+            let vault_tool = VaultToolImpl::new();
 
             match copy_secrets_into_vault(&namespace, &vault_dest_path, &secret_mask,
-                                          ignore_base64_errors, ignore_utf8_errors, &kubectl_tool) {
+                                          ignore_base64_errors, ignore_utf8_errors,
+                                          &kubectl_tool, &vault_tool) {
                 Ok(()) => println!("success"),
                 Err(e) => eprintln!("error: {}", e)
             }
@@ -82,7 +85,9 @@ fn main() {
 
             check_required_append_env_vars();
 
-            match append_secrets_to_vault_path(&vault_src_path, &vault_dest_path) {
+            let vault_tool = VaultToolImpl::new();
+
+            match append_secrets_to_vault_path(&vault_src_path, &vault_dest_path, &vault_tool) {
                 Ok(()) => println!("success"),
                 Err(e) => eprintln!("error: {}, {}", e, e.root_cause())
             }

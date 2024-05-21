@@ -11,65 +11,131 @@ use crate::logging::LOG_LINE_SEPARATOR;
 pub mod path;
 pub mod read;
 
-const VAULT_BIN_PATH: &str = "/usr/bin/vault";
+const VAULT_BIN_PATH: &str = "vault";
 
 const VAULT_SECRET_ENCODED_PREFIX: &str = "vault:";
 
 const TEMP_DIR_NAME: &str = "tmp";
 
-pub fn create_secrets_in_vault(vault_path: &str, secrets: &HashMap<String, String>) -> anyhow::Result<()> {
-    info!("creating secrets in vault at path '{vault_path}'..");
+pub trait VaultTool {
+    fn create_secrets(&self, vault_path: &str, secrets: &HashMap<String, String>) -> anyhow::Result<()>;
+}
 
-    trace!("{LOG_LINE_SEPARATOR}");
-    trace!("secrets:");
-    trace!("{:?}", secrets);
-    trace!("{LOG_LINE_SEPARATOR}");
+pub struct VaultToolImpl;
 
-    let mut args_builder: String = format!("kv put {vault_path} ");
+impl VaultToolImpl {
+    pub fn new() -> Self { Self }
+}
 
-    let mut complex_value_file_paths: Vec<String> = vec![];
+impl VaultTool for VaultToolImpl {
+    fn create_secrets(&self, vault_path: &str, secrets: &HashMap<String, String>) -> anyhow::Result<()> {
+        info!("creating secrets in vault at path '{vault_path}'..");
 
-    for (key, value) in secrets {
-        debug!("secret '{key}'");
+        trace!("{LOG_LINE_SEPARATOR}");
+        trace!("secrets:");
+        trace!("{:?}", secrets);
+        trace!("{LOG_LINE_SEPARATOR}");
 
-        if !value.starts_with(VAULT_SECRET_ENCODED_PREFIX) {
-            if is_complex_secret_value(&value) {
-                let tmp_file_path = write_complex_value_into_file(&key, &value)?;
+        let mut args_builder: String = format!("kv put {vault_path} ");
 
-                complex_value_file_paths.push(tmp_file_path.to_string());
+        let mut complex_value_file_paths: Vec<String> = vec![];
 
-                args_builder.push_str(&format!("{key}=@{tmp_file_path} "))
+        for (key, value) in secrets {
+            debug!("secret '{key}'");
+
+            if !value.starts_with(VAULT_SECRET_ENCODED_PREFIX) {
+                if is_complex_secret_value(&value) {
+                    let tmp_file_path = write_complex_value_into_file(&key, &value)?;
+
+                    complex_value_file_paths.push(tmp_file_path.to_string());
+
+                    args_builder.push_str(&format!("{key}=@{tmp_file_path} "))
+
+                } else {
+                    args_builder.push_str(&format!("{}={} ", key, value))
+                }
 
             } else {
-                args_builder.push_str(&format!("{}={} ", key, value))
+                info!("secret '{key}' contains vault path, skip")
             }
-
-        } else {
-            info!("secret '{key}' contains vault path, skip")
         }
-    }
 
-    let output = execute_shell_command(VAULT_BIN_PATH, &args_builder).context("vault add error")?;
+        let output = execute_shell_command(VAULT_BIN_PATH, &args_builder).context("vault add error")?;
 
-    trace!("{LOG_LINE_SEPARATOR}");
-    trace!("vault put output:");
-    trace!("{output}");
-    trace!("{LOG_LINE_SEPARATOR}");
+        trace!("{LOG_LINE_SEPARATOR}");
+        trace!("vault put output:");
+        trace!("{output}");
+        trace!("{LOG_LINE_SEPARATOR}");
 
-    debug!("cleaning up temporary files..");
+        debug!("cleaning up temporary files..");
 
-    for file_path in complex_value_file_paths {
-        let file_path = Path::new(&file_path);
+        for file_path in complex_value_file_paths {
+            let file_path = Path::new(&file_path);
 
-        if file_path.exists() {
-            fs::remove_file(&file!())?;
+            if file_path.exists() {
+                fs::remove_file(&file!())?;
+            }
         }
+
+        info!("all secrets have been saved into vault at path '{vault_path}'");
+
+        Ok(())
     }
-
-    info!("all secrets have been saved into vault at path '{vault_path}'");
-
-    Ok(())
 }
+
+// pub fn create_secrets_in_vault(vault_path: &str, secrets: &HashMap<String, String>) -> anyhow::Result<()> {
+//     info!("creating secrets in vault at path '{vault_path}'..");
+//
+//     trace!("{LOG_LINE_SEPARATOR}");
+//     trace!("secrets:");
+//     trace!("{:?}", secrets);
+//     trace!("{LOG_LINE_SEPARATOR}");
+//
+//     let mut args_builder: String = format!("kv put {vault_path} ");
+//
+//     let mut complex_value_file_paths: Vec<String> = vec![];
+//
+//     for (key, value) in secrets {
+//         debug!("secret '{key}'");
+//
+//         if !value.starts_with(VAULT_SECRET_ENCODED_PREFIX) {
+//             if is_complex_secret_value(&value) {
+//                 let tmp_file_path = write_complex_value_into_file(&key, &value)?;
+//
+//                 complex_value_file_paths.push(tmp_file_path.to_string());
+//
+//                 args_builder.push_str(&format!("{key}=@{tmp_file_path} "))
+//
+//             } else {
+//                 args_builder.push_str(&format!("{}={} ", key, value))
+//             }
+//
+//         } else {
+//             info!("secret '{key}' contains vault path, skip")
+//         }
+//     }
+//
+//     let output = execute_shell_command(VAULT_BIN_PATH, &args_builder).context("vault add error")?;
+//
+//     trace!("{LOG_LINE_SEPARATOR}");
+//     trace!("vault put output:");
+//     trace!("{output}");
+//     trace!("{LOG_LINE_SEPARATOR}");
+//
+//     debug!("cleaning up temporary files..");
+//
+//     for file_path in complex_value_file_paths {
+//         let file_path = Path::new(&file_path);
+//
+//         if file_path.exists() {
+//             fs::remove_file(&file!())?;
+//         }
+//     }
+//
+//     info!("all secrets have been saved into vault at path '{vault_path}'");
+//
+//     Ok(())
+// }
 
 fn is_complex_secret_value(input: &str) -> bool {
     input.contains("\n") || input.contains("\"") ||

@@ -4,11 +4,11 @@ use log::info;
 
 use crate::k8s::KubectlTool;
 use crate::k8s::manifest::get_secrets_from_manifest;
-use crate::vault::create_secrets_in_vault;
+use crate::vault::VaultTool;
 
 pub fn copy_secrets_into_vault(k8s_namespace: &str, vault_dest_path: &str, secret_mask: &str,
                                ignore_base64_errors: bool, ignore_utf8_errors: bool,
-                               kubectl_tool: &dyn KubectlTool) -> anyhow::Result<()> {
+               kubectl_tool: &dyn KubectlTool, vault_tool: &dyn VaultTool) -> anyhow::Result<()> {
     info!("copy k8s secrets from namespace '{k8s_namespace}' into vault '{vault_dest_path}'..");
 
     let secret_names = kubectl_tool.get_secret_names(&k8s_namespace, &secret_mask)?;
@@ -26,7 +26,7 @@ pub fn copy_secrets_into_vault(k8s_namespace: &str, vault_dest_path: &str, secre
         }
     }
 
-    create_secrets_in_vault(&vault_dest_path, &all_secrets)?;
+    vault_tool.create_secrets(&vault_dest_path, &all_secrets)?;
 
     info!("all secrets have been copied to '{vault_dest_path}'");
 
