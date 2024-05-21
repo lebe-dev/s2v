@@ -11,6 +11,9 @@ use crate::logging::LOG_LINE_SEPARATOR;
 pub mod path;
 pub mod read;
 
+#[cfg(test)]
+pub mod mock;
+
 const VAULT_BIN_PATH: &str = "vault";
 
 const VAULT_SECRET_ENCODED_PREFIX: &str = "vault:";
