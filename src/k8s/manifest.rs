@@ -3,26 +3,8 @@ use std::collections::HashMap;
 use anyhow::{anyhow, Context};
 use log::{debug, error, info};
 
-use crate::exec::execute_shell_command;
-use crate::k8s::{KUBECTL_EXEC_PATH, KubernetesSecret};
+use crate::k8s::KubernetesSecret;
 use crate::logging::LOG_LINE_SEPARATOR;
-
-pub fn get_secret_manifest(namespace: &str, secret_name: &str) -> anyhow::Result<String> {
-    info!("getting secret manifest '{secret_name}' (namespace '{namespace}')..");
-
-    let args = format!("-n {namespace} get secret {secret_name} -o yaml");
-
-    let output = execute_shell_command(KUBECTL_EXEC_PATH, &args)?;
-
-    debug!("{LOG_LINE_SEPARATOR}");
-    debug!("kubectl output:");
-    debug!("{output}");
-    debug!("{LOG_LINE_SEPARATOR}");
-
-    info!("secret manifest '{secret_name}' (namespace '{namespace}') has been read");
-
-    Ok(output)
-}
 
 pub fn get_secrets_from_manifest(manifest: &str, ignore_base64_errors: bool,
                              ignore_utf8_errors: bool) -> anyhow::Result<HashMap<String,String>> {
@@ -33,7 +15,8 @@ pub fn get_secrets_from_manifest(manifest: &str, ignore_base64_errors: bool,
     debug!("{manifest}");
     debug!("{LOG_LINE_SEPARATOR}");
 
-    let secret: KubernetesSecret = serde_yaml::from_str(&manifest).context("secret deserialization error")?;
+    let secret: KubernetesSecret = serde_yaml::from_str(&manifest)
+                                             .context("secret deserialization error")?;
 
     let mut secrets: HashMap<String, String> = HashMap::new();
 
