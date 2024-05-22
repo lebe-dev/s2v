@@ -86,63 +86,10 @@ impl VaultTool for VaultToolImpl {
     }
 }
 
-// pub fn create_secrets_in_vault(vault_path: &str, secrets: &HashMap<String, String>) -> anyhow::Result<()> {
-//     info!("creating secrets in vault at path '{vault_path}'..");
-//
-//     trace!("{LOG_LINE_SEPARATOR}");
-//     trace!("secrets:");
-//     trace!("{:?}", secrets);
-//     trace!("{LOG_LINE_SEPARATOR}");
-//
-//     let mut args_builder: String = format!("kv put {vault_path} ");
-//
-//     let mut complex_value_file_paths: Vec<String> = vec![];
-//
-//     for (key, value) in secrets {
-//         debug!("secret '{key}'");
-//
-//         if !value.starts_with(VAULT_SECRET_ENCODED_PREFIX) {
-//             if is_complex_secret_value(&value) {
-//                 let tmp_file_path = write_complex_value_into_file(&key, &value)?;
-//
-//                 complex_value_file_paths.push(tmp_file_path.to_string());
-//
-//                 args_builder.push_str(&format!("{key}=@{tmp_file_path} "))
-//
-//             } else {
-//                 args_builder.push_str(&format!("{}={} ", key, value))
-//             }
-//
-//         } else {
-//             info!("secret '{key}' contains vault path, skip")
-//         }
-//     }
-//
-//     let output = execute_shell_command(VAULT_BIN_PATH, &args_builder).context("vault add error")?;
-//
-//     trace!("{LOG_LINE_SEPARATOR}");
-//     trace!("vault put output:");
-//     trace!("{output}");
-//     trace!("{LOG_LINE_SEPARATOR}");
-//
-//     debug!("cleaning up temporary files..");
-//
-//     for file_path in complex_value_file_paths {
-//         let file_path = Path::new(&file_path);
-//
-//         if file_path.exists() {
-//             fs::remove_file(&file!())?;
-//         }
-//     }
-//
-//     info!("all secrets have been saved into vault at path '{vault_path}'");
-//
-//     Ok(())
-// }
-
 fn is_complex_secret_value(input: &str) -> bool {
     input.contains("\n") || input.contains("\"") ||
-        input.contains(",") || input.contains(" ")
+    input.contains(",") || input.contains(" ") ||
+    input.contains("&") || input.contains("@")
 }
 
 fn write_complex_value_into_file(key: &str, value: &str) -> anyhow::Result<String> {
