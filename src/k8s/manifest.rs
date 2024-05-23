@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
+use base64::Engine;
 use log::{debug, error, info};
 
 use crate::k8s::KubernetesSecret;
@@ -22,7 +23,8 @@ pub fn get_secrets_from_manifest(manifest: &str, ignore_base64_errors: bool,
 
     for (key, encoded_value) in secret.data {
         debug!("processing secret key '{key}'");
-        match base64::decode(&encoded_value) {
+
+        match base64::prelude::BASE64_STANDARD.decode(&encoded_value) {
             Ok(decoded) => {
                 match String::from_utf8(decoded) {
                     Ok(value) => secrets.insert(key.to_string(), value),

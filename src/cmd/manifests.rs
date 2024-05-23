@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::Path;
 
+use base64::Engine;
 use log::info;
 use tera::{Context as TeraContext, Tera};
 
@@ -55,11 +56,13 @@ pub fn generate_manifest_with_vault_paths(src_k8s_namespace: &str, secret_mask: 
     for secret_name in all_secrets_names {
         let secret_value = format!("vault:{vault_dest_path}#{secret_name}");
 
-        let encoded_value = base64::encode(&secret_value);
+        let encoded_value = base64::prelude::BASE64_STANDARD.decode(&secret_value)?;
 
-        info!("- {secret_name}: {encoded_value}");
+        let encoded_value_str = String::from_utf8(encoded_value)?;
 
-        let secret_row = format!("  {secret_name}: {encoded_value}\n");
+        info!("- {secret_name}: {encoded_value_str}");
+
+        let secret_row = format!("  {secret_name}: {encoded_value_str}\n");
 
         secrets_block.push_str(&secret_row);
     }

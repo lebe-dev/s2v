@@ -3,13 +3,15 @@ use std::fs;
 use std::path::Path;
 
 use anyhow::anyhow;
+use base64::Engine;
 use log::{error, info};
 
 use crate::k8s::manifest::get_secrets_from_manifest;
 use crate::vault::path::add_data_part_to_vault_path;
 
 pub fn update_vault_paths_based_on_manifest_file(file_path: &str, new_vault_path: &str,
-                                                 ignore_base64_errors: bool, ignore_utf8_errors: bool) -> anyhow::Result<HashMap<String,String>> {
+                            ignore_base64_errors: bool,
+                            ignore_utf8_errors: bool) -> anyhow::Result<HashMap<String,String>> {
     info!("update vault paths in manifest file '{file_path}' to '{new_vault_path}'");
 
     let manifest_file = Path::new(file_path);
@@ -27,7 +29,9 @@ pub fn update_vault_paths_based_on_manifest_file(file_path: &str, new_vault_path
         for (k, _) in secrets {
             let updated_value = format!("vault:{new_vault_path}#{k}");
             info!("- '{k}': {updated_value}");
-            let encoded_value = base64::encode(updated_value);
+            let encoded_value = base64::prelude::BASE64_STANDARD.decode(&updated_value)?;
+
+            let encoded_value = String::from_utf8(encoded_value)?;
 
             updated_paths.insert(k, encoded_value);
         }
