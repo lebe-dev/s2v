@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use anyhow::anyhow;
+use anyhow::{anyhow};
 use base64::Engine;
-use log::{error, info};
+use log::{debug, error, info};
 
 use crate::k8s::manifest::get_secrets_from_manifest;
 use crate::vault::path::add_data_part_to_vault_path;
@@ -28,10 +28,10 @@ pub fn update_vault_paths_based_on_manifest_file(file_path: &str, new_vault_path
 
         for (k, _) in secrets {
             let updated_value = format!("vault:{new_vault_path}#{k}");
-            info!("- '{k}': {updated_value}");
-            let encoded_value = base64::prelude::BASE64_STANDARD.decode(&updated_value)?;
+            debug!("vault path '{updated_value}'");
+            info!("- processing secret: '{k}': {updated_value}");
 
-            let encoded_value = String::from_utf8(encoded_value)?;
+            let encoded_value = base64::prelude::BASE64_STANDARD.encode(&updated_value);
 
             updated_paths.insert(k, encoded_value);
         }
