@@ -3,10 +3,11 @@ use std::process::exit;
 
 use clap::ArgMatches;
 
-use crate::cli::{DEST_K8S_NAMESPACE_ARG, FILENAME_ARG, IGNORE_BASE64_ERRORS_FLAG, IGNORE_UTF8_ERRORS_FLAG, init_cli_app, init_working_dir, LOG_LEVEL_ARGUMENT, LOG_LEVEL_DEFAULT_VALUE, SECRET_MASK_ARG, SERVICE_NAME_ARG, SRC_K8S_NAMESPACE_ARG, VAULT_DEST_PATH_ARG, VAULT_SRC_PATH_ARG};
+use crate::cli::{DEST_K8S_NAMESPACE_ARG, FILENAME_ARG, IGNORE_BASE64_ERRORS_FLAG, IGNORE_UTF8_ERRORS_FLAG, init_cli_app, init_working_dir, LOG_LEVEL_ARGUMENT, LOG_LEVEL_DEFAULT_VALUE, SECRET_IGNORE_MASK_ARG, SECRET_MASK_ARG, SERVICE_NAME_ARG, SRC_K8S_NAMESPACE_ARG, VAULT_DEST_PATH_ARG, VAULT_SRC_PATH_ARG};
 use crate::cmd::append::append_secrets_to_vault_path;
 use crate::cmd::copy::copy_secrets_into_vault;
 use crate::cmd::manifests::generate_manifest_with_vault_paths;
+use crate::cmd::SecretOptions;
 use crate::cmd::update::update_vault_paths_based_on_manifest_file;
 use crate::k8s::KubectlToolImpl;
 use crate::logging::{get_logging_config, LOG_LINE_SEPARATOR};
@@ -29,6 +30,7 @@ fn main() {
             let namespace = matches.get_one::<String>(SRC_K8S_NAMESPACE_ARG).unwrap();
             let vault_dest_path = matches.get_one::<String>(VAULT_DEST_PATH_ARG).unwrap();
             let secret_mask = matches.get_one::<String>(SECRET_MASK_ARG).unwrap();
+            let secret_ignore_mask = matches.get_one::<String>(SECRET_IGNORE_MASK_ARG);
             let ignore_base64_errors = matches.get_flag(IGNORE_BASE64_ERRORS_FLAG);
             let ignore_utf8_errors = matches.get_flag(IGNORE_UTF8_ERRORS_FLAG);
 
@@ -42,8 +44,14 @@ fn main() {
             let kubectl_tool = KubectlToolImpl::new();
             let vault_tool = VaultToolImpl::new();
 
-            match copy_secrets_into_vault(&namespace, &vault_dest_path, &secret_mask,
-                                          ignore_base64_errors, ignore_utf8_errors,
+            let secret_options = SecretOptions::new(
+                secret_mask,
+                secret_ignore_mask,
+                ignore_base64_errors,
+                ignore_utf8_errors
+            );
+
+            match copy_secrets_into_vault(&namespace, &vault_dest_path, &secret_options,
                                           &kubectl_tool, &vault_tool) {
                 Ok(()) => println!("success"),
                 Err(e) => eprintln!("error: {}", e)
@@ -52,6 +60,7 @@ fn main() {
         Some(("gen-manifest", matches)) => {
             let src_k8s_namespace = matches.get_one::<String>(SRC_K8S_NAMESPACE_ARG).unwrap();
             let secret_mask = matches.get_one::<String>(SECRET_MASK_ARG).unwrap();
+            let secret_ignore_mask = matches.get_one::<String>(SECRET_IGNORE_MASK_ARG);
             let dest_k8s_namespace = matches.get_one::<String>(DEST_K8S_NAMESPACE_ARG).unwrap();
             let service_name = matches.get_one::<String>(SERVICE_NAME_ARG).unwrap();
             let vault_dest_path = matches.get_one::<String>(VAULT_DEST_PATH_ARG).unwrap();
@@ -70,9 +79,16 @@ fn main() {
 
             let kubectl_tool = KubectlToolImpl::new();
 
-            match generate_manifest_with_vault_paths(&src_k8s_namespace, &secret_mask, &service_name,
-                                     &dest_k8s_namespace, &vault_dest_path,
-                                         ignore_base64_errors, ignore_utf8_errors, &kubectl_tool) {
+            let secret_options = SecretOptions::new(
+                secret_mask,
+                secret_ignore_mask,
+                ignore_base64_errors,
+                ignore_utf8_errors
+            );
+
+            match generate_manifest_with_vault_paths(&src_k8s_namespace,  &service_name,
+                                     &dest_k8s_namespace, &vault_dest_path, &secret_options,
+                                         &kubectl_tool) {
                 Ok(()) => println!("success"),
                 Err(e) => eprintln!("error: {}", e)
             }

@@ -27,6 +27,8 @@ pub const VAULT_DEST_PATH_ARG: &str = "vault-dest-path";
 
 pub const SECRET_MASK_ARG: &str = "secret-mask";
 
+pub const SECRET_IGNORE_MASK_ARG: &str = "secret-ignore-mask";
+
 pub const SERVICE_NAME_ARG: &str = "service-name";
 
 pub const FILENAME_ARG: &str = "filename";
@@ -64,6 +66,7 @@ pub fn init_cli_app() -> ArgMatches {
                 .arg(get_src_k8s_namespace_arg())
                 .arg(get_secret_mask_arg())
                 .arg(get_vault_dest_path_arg())
+                .arg(get_secret_ignore_mask_arg())
                 .arg(get_ignore_base64_errors_flag())
                 .arg(get_ignore_utf8_errors_flag())
         )
@@ -75,6 +78,7 @@ pub fn init_cli_app() -> ArgMatches {
                 .arg(get_service_name_arg())
                 .arg(get_dest_k8s_namespace_arg())
                 .arg(get_vault_dest_path_arg())
+                .arg(get_secret_ignore_mask_arg())
                 .arg(get_ignore_base64_errors_flag())
                 .arg(get_ignore_utf8_errors_flag())
         )
@@ -123,6 +127,12 @@ fn get_secret_mask_arg() -> Arg {
     Arg::new(SECRET_MASK_ARG)
         .help("filter secret names by mask. Example: some-service")
         .required(true)
+}
+
+fn get_secret_ignore_mask_arg() -> Arg {
+    Arg::new(SECRET_IGNORE_MASK_ARG)
+        .help("ignore secrets by mask. Example: some-service")
+        .required(false)
 }
 
 fn get_service_name_arg() -> Arg {

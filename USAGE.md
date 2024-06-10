@@ -12,7 +12,7 @@ export VAULT_TOKEN=some-token
 ## Copy K8s secrets to the vault
 
 ```shell
-# ./s2v copy [--ignore-base64-errors] [--ignore-utf8-errors] <k8s-namespace> <secret-mask> <vault-dest-path>
+# ./s2v copy [--ignore-base64-errors] [--ignore-utf8-errors] [--secret-ignore-mask=MASK] <k8s-namespace> <secret-mask> <vault-dest-path> [secret-ignore-mask]
 ./s2v copy demo your-app kv/demo/your-app
 ```
 
@@ -23,7 +23,7 @@ Then generates yaml-manifest based on a `template.yaml` file. Secret names will 
 Format `vault:<vault-dest-path>#secret-name` (Encoded with Base64).
 
 ```shell
-# ./s2v gen-manifest [--ignore-base64-errors] [--ignore-utf8-errors] <src-k8s-namespace> <secret-mask> <service-name> <dest-k8s-namespace> <vault-dest-path>
+# ./s2v gen-manifest [--ignore-base64-errors] [--ignore-utf8-errors] <src-k8s-namespace> <secret-mask> <service-name> <dest-k8s-namespace> <vault-dest-path> [secret-ignore-mask]
 ./s2v gen-manifest old-ns your-app your-app new-ns kv/demo/your-app
 ```
 

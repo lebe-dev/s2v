@@ -14,7 +14,7 @@ export VAULT_TOKEN=some-token
 ## Копирование секретов из K8s в HashiCorp Vault
 
 ```shell
-# ./s2v copy [--ignore-base64-errors] [--ignore-utf8-errors] <k8s-namespace> <secret-mask> <vault-dest-path>
+# ./s2v copy [--ignore-base64-errors] [--ignore-utf8-errors] [--secret-ignore-mask=MASK] <k8s-namespace> <secret-mask> <vault-dest-path>
 ./s2v copy demo your-app kv/demo/your-app
 ```
 
@@ -24,7 +24,7 @@ export VAULT_TOKEN=some-token
 Затем формирует yaml-манифеста на базе шаблона `template.yaml`. В качестве значений для секретов используется формат `vault:<vault-dest-path>#имя-секрета` (в кодировке base64).
 
 ```shell
-# ./s2v gen-manifest [--ignore-base64-errors] [--ignore-utf8-errors] <src-k8s-namespace> <secret-mask> <service-name> <dest-k8s-namespace> <vault-dest-path>
+# ./s2v gen-manifest [--ignore-base64-errors] [--ignore-utf8-errors] [--secret-ignore-mask=MASK] <src-k8s-namespace> <secret-mask> <service-name> <dest-k8s-namespace> <vault-dest-path>
 ./s2v gen-manifest old-ns your-app your-app new-ns kv/demo/your-app
 ```
 

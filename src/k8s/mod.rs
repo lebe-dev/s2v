@@ -14,7 +14,7 @@ pub mod mock;
 pub const KUBECTL_EXEC_PATH: &str = "kubectl";
 
 pub trait KubectlTool {
-    fn get_secret_names(&self, namespace: &str, mask: &str) -> anyhow::Result<Vec<String>>;
+    fn get_secret_names(&self, namespace: &str, mask: &str, ignore_mask: Option<&String>) -> anyhow::Result<Vec<String>>;
     fn get_secret_manifest(&self, namespace: &str, secret_name: &str) -> anyhow::Result<String>;
 }
 
@@ -27,7 +27,7 @@ impl KubectlToolImpl {
 }
 
 impl KubectlTool for KubectlToolImpl {
-    fn get_secret_names(&self, namespace: &str, mask: &str) -> anyhow::Result<Vec<String>> {
+    fn get_secret_names(&self, namespace: &str, mask: &str, ignore_mask: Option<&String>) -> anyhow::Result<Vec<String>> {
         info!("getting secret names from namespace '{namespace}', filtered by mask '{mask}'..");
 
         let args = format!("-n {namespace} get secrets --field-selector type=Opaque");
@@ -49,9 +49,20 @@ impl KubectlTool for KubectlToolImpl {
             if row_parts.len() > 0 {
                 let secret_name = row_parts.first().unwrap();
 
-                if secret_name.contains(&mask) {
-                    secrets.push(secret_name.to_string());
-                    info!("added secret '{secret_name}'");
+                match ignore_mask {
+                    Some(ignore_mask) => {
+                        if secret_name.contains(&mask) &&
+                           !secret_name.contains(ignore_mask) {
+                            secrets.push(secret_name.to_string());
+                            info!("added secret '{secret_name}'");
+                        }
+                    }
+                    None => {
+                        if secret_name.contains(&mask) {
+                            secrets.push(secret_name.to_string());
+                            info!("added secret '{secret_name}'");
+                        }
+                    }
                 }
             }
         }

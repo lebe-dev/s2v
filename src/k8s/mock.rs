@@ -30,7 +30,7 @@ impl KubectlToolMockImpl {
 }
 
 impl KubectlTool for KubectlToolMockImpl {
-    fn get_secret_names(&self, _namespace: &str, _mask: &str) -> anyhow::Result<Vec<String>> {
+    fn get_secret_names(&self, _namespace: &str, _mask: &str, _ignore_mask: Option<&String>) -> anyhow::Result<Vec<String>> {
         if !self.get_secret_names_error {
             Ok(self.get_secret_names_output.clone())
 
