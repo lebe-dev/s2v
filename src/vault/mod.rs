@@ -76,7 +76,7 @@ impl VaultTool for VaultToolImpl {
             let file_path = Path::new(&file_path);
 
             if file_path.exists() {
-                fs::remove_file(&file!())?;
+                fs::remove_file(&file_path)?;
             }
         }
 
