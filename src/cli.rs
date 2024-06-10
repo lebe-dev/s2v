@@ -39,7 +39,7 @@ pub const IGNORE_UTF8_ERRORS_FLAG: &str = "ignore-utf8-errors";
 
 pub fn init_cli_app() -> ArgMatches {
     Command::new("s2v")
-        .version("1.1.2")
+        .version("1.2.0")
         .author("Eugene Lebedev <eugene.0x90@gmail.com>")
         .about("Migration tool for K8s vanilla secrets to HashiCorp Vault")
         .subcommand_required(true)
